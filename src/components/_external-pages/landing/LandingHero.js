@@ -2,6 +2,7 @@
 import * as Yup from 'yup';
 import { useFormik, Form, FormikProvider } from 'formik';
 import { useState, useCallback } from 'react';
+import { useSnackbar } from 'notistack';
 // material
 import { CardHeader, Card, Box, Container, Grid, Typography, Stack, TextField, CardContent } from '@material-ui/core';
 import { LoadingButton } from '@material-ui/lab';
@@ -12,7 +13,7 @@ import BasicTable from './Table';
 export default function LandingHero() {
   const [traits, setTraits] = useState([]);
   const [avatarUrl, setAvatarUrl] = useState('');
-
+  const { enqueueSnackbar } = useSnackbar();
   const formikSchema = Yup.object().shape({
     title: Yup.string().required('Title is required'),
     content: Yup.string().required('Content is required')
@@ -25,20 +26,8 @@ export default function LandingHero() {
     validationSchema: formikSchema,
     onSubmit: async (values, { setErrors, setSubmitting }) => {
       try {
-        // await register(values.title, values.content);
-        // enqueueSnackbar('Add success', {
-        //   variant: 'success',
-        //   action: (key) => (
-        //     <MIconButton size="small" onClick={() => closeSnackbar(key)}>
-        //       <Icon icon={closeFill} />
-        //     </MIconButton>
-        //   )
-        // });
-        // if (isMountedRef.current) {
-        //   setSubmitting(false);
-        // }
+        enqueueSnackbar('Add success', { variant: 'success' });
         const { title, content } = values;
-
         const nId = traits.length + 1;
         const newData = {
           id: nId,
@@ -76,6 +65,25 @@ export default function LandingHero() {
     traits.map((trait) => {
       const { id } = trait;
       if (id !== deleteId) {
+        updatedTraits.push(trait);
+      }
+    });
+    setTraits([...updatedTraits]);
+  };
+
+  const handleEditData = (data) => {
+    const finaldata = {
+      title: data.utitle,
+      content: data.ucontent,
+      image: data.uimage.preview
+    };
+    const updatedTraits = [];
+    traits.map((trait) => {
+      const { id } = trait;
+      if (id === data.uId) {
+        console.log('here is final data', finaldata);
+        updatedTraits.push(finaldata);
+      } else {
         updatedTraits.push(trait);
       }
     });
@@ -159,7 +167,7 @@ export default function LandingHero() {
         <Stack spacing={3}>
           <Card>
             <CardHeader title="Result Table" />
-            <BasicTable traits={traits} onDelete={handleDeleteTrait} />
+            <BasicTable traits={traits} onDelete={handleDeleteTrait} onEdit={handleEditData} />
           </Card>
         </Stack>
         <Box m={3} />
